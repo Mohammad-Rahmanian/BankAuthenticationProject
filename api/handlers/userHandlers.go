@@ -16,47 +16,49 @@ func RegisterRequest(c echo.Context) error {
 	ip := c.RealIP()
 	firstImage, err := c.FormFile("firstImage")
 	if err != nil {
-		logrus.Printf("Unable to open first iamge")
-		return c.JSON(http.StatusBadRequest, "Unable to open file")
+		logrus.Printf("Unable to open first iamge\n")
+		return c.String(http.StatusBadRequest, "Unable to open file")
 	}
-
 	secondImage, err := c.FormFile("secondImage")
 	if err != nil {
-		logrus.Printf("Unable to open second image")
-		return c.JSON(http.StatusBadRequest, "Unable to open file")
+		logrus.Printf("Unable to open second image\n")
+		return c.String(http.StatusBadRequest, "Unable to open file")
 	}
-
-	nationalId = base64.StdEncoding.EncodeToString([]byte(nationalId))
-	firstPath := api.UploadS3(api.StorageSession, firstImage, "SajjadStorage", lastname)
-	secondPath := api.UploadS3(api.StorageSession, secondImage, "SajjadStorage", lastname)
-	user := api.NewUSer(email, lastname, nationalId, ip, firstPath, secondPath, "pending")
-	err = api.Insert(email, lastname, nationalId, ip, firstPath, secondPath)
+	encryptedNationalID := base64.StdEncoding.EncodeToString([]byte(nationalId))
+	firstPath, err := api.UploadS3(api.StorageSession, firstImage, "SajjadStorage", encryptedNationalID)
 	if err != nil {
-		logrus.Printf("Can not insert to database")
-		return c.JSON(http.StatusInternalServerError, "Can not insert to database")
+		logrus.Printf("Unable to upload first image\n")
+		return c.String(http.StatusBadRequest, "Unable to upload first image")
 	}
-	err = api.WriteMQ(nationalId)
+	secondPath, err := api.UploadS3(api.StorageSession, secondImage, "SajjadStorage", encryptedNationalID)
 	if err != nil {
-		logrus.Printf("Can not write to queue")
-		return c.JSON(http.StatusInternalServerError, "Can not write to queue")
+		logrus.Printf("Unable to upload first image\n")
+		return c.String(http.StatusBadRequest, "Unable to upload first image")
 	}
-	fmt.Printf("%#v", user)
+	user := api.NewUSer(email, lastname, encryptedNationalID, ip, firstPath, secondPath, "pending")
+	err = api.Insert(email, lastname, encryptedNationalID, ip, firstPath, secondPath)
+	if err != nil {
+		logrus.Printf("Can not insert to database\n")
+		return c.String(http.StatusInternalServerError, "Can not insert to database")
+	}
+	err = api.WriteMQ(encryptedNationalID)
+	if err != nil {
+		logrus.Printf("Can not write to queue\n")
+		return c.String(http.StatusInternalServerError, "Can not write to queue")
+	}
+	fmt.Printf("%#v\n", *user)
 	return c.String(http.StatusOK, "Your authentication request has been registered.")
 }
 
 func CheckRequest(c echo.Context) error {
 	nationalID := c.QueryParam("nationalID")
-	nationalID = base64.StdEncoding.EncodeToString([]byte(nationalID))
-	api.GetAll()
-	var user = api.FindUser(nationalID)
-
-	if user.IP != c.RealIP() {
-		return c.String(403, "Your access is unauthorized")
-	}
-	if user.State == "pending" {
-		return c.String(http.StatusOK, fmt.Sprintf("Pending...."))
-
-	} else if user.State == "" {
+	encryptedNationalID := base64.StdEncoding.EncodeToString([]byte(nationalID))
+	user, err := api.FindUser(encryptedNationalID)
+	if err != nil {
+		return c.String(http.StatusForbidden, "Your national id is wrong")
+	} else if user.IP != c.RealIP() {
+		return c.String(http.StatusForbidden, "Your access is unauthorized")
+	} else if user.State == "pending" {
 		return c.String(http.StatusOK, fmt.Sprintf("Pending...."))
 
 	} else if user.State == "rejected" {
@@ -65,7 +67,7 @@ func CheckRequest(c echo.Context) error {
 	} else if user.State == "accepted" {
 		return c.String(http.StatusOK, fmt.Sprintf("Your authentication request has been accepted. Your username is "+string(user.Lastname)))
 	} else {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("heb"))
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Bad request."))
 	}
 
 }

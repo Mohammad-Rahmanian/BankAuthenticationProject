@@ -15,7 +15,7 @@ import (
 var StorageSession *session.Session
 var RabbitConnection *amqp.Connection
 
-func ConnectS3() *session.Session {
+func ConnectS3() error {
 	var err error
 	StorageSession, err = session.NewSession(&aws.Config{
 		Credentials: credentials.NewStaticCredentials("175b85c0-26e0-4ca2-b25a-e2d3ec0b56cb", "380b008e0005cbf7f14e68c6e365f65940116d3016b182297f73bca9d8f17e4f", ""),
@@ -24,42 +24,47 @@ func ConnectS3() *session.Session {
 	})
 
 	if err != nil {
-		logrus.Warnln("can not connect to s3", err)
+		logrus.Warnln("Can not connect to s3 ", err)
+		return err
 	}
-	logrus.Infoln("connected to S3 instance")
+	logrus.Println("connected to S3")
 
-	return StorageSession
+	return err
 }
 
-func UploadS3(sess *session.Session, fileHeader *multipart.FileHeader, bucket string, ID string) string {
+func UploadS3(sess *session.Session, fileHeader *multipart.FileHeader, bucket string, ID string) (string, error) {
 	uploader := s3manager.NewUploader(sess)
 	file, err := fileHeader.Open()
 	key := fmt.Sprintf("%s", fileHeader.Filename+ID)
-
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   file,
 	})
 	if err != nil {
-		logrus.Warnln("Unable to upload %q to %q, %v", fileHeader.Filename, bucket, err)
+		logrus.Printf("Unable to upload %v to %v, %v\n", fileHeader.Filename, bucket, err)
+		return "", err
 	}
-	logrus.Infoln("Successfully uploaded %q to %q\n", fileHeader.Filename, bucket)
+	logrus.Printf("Successfully uploaded %v to %v\n", fileHeader.Filename, bucket)
 
-	return key
+	return key, err
 }
-func ConnectMQ() {
+func ConnectMQ() error {
 	url := "amqps://kkyazhsy:tXIS6A9botHvCsdygKjRfM3FwFR4qElg@hummingbird.rmq.cloudamqp.com/kkyazhsy"
 	var err error
 	RabbitConnection, err = amqp.Dial(url)
 	if err != nil {
-		logrus.Println(err)
+		logrus.Warnln("Can not connect to MQ ", err)
+		return err
 	}
+	logrus.Println("connected to MQ")
+	return err
 }
 
 func CloseMQ() {
 	err := RabbitConnection.Close()
 	if err != nil {
+		logrus.Warnln("Can not close MQ ", err)
 		logrus.Println(err)
 	}
 }
@@ -74,9 +79,8 @@ func WriteMQ(message string) error {
 
 	err := channel.PublishWithContext(context.TODO(), "amq.topic", "ping", false, false, msg)
 	if err != nil {
-		logrus.Warnln("cant publish message to queue")
+		logrus.Warnln("Can not write to Mq ", err)
 		return err
 	}
-
 	return nil
 }

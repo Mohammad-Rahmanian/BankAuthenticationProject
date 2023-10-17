@@ -4,6 +4,7 @@ import (
 	"BankAuthenticationProject/api"
 	"BankAuthenticationProject/router"
 	"context"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -14,8 +15,17 @@ func main() {
 			panic(err)
 		}
 	}()
-	api.ConnectS3()
-	api.ConnectMQ()
+	err := api.ConnectS3()
+	if err != nil {
+		logrus.Println(err)
+	}
+	err = api.ConnectMQ()
+	if err != nil {
+		logrus.Println(err)
+	}
 	defer api.CloseMQ()
-	e.Start(":8000")
+	err = e.Start(":8000")
+	if err != nil {
+		logrus.Println(err)
+	}
 }
