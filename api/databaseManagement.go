@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,19 +17,20 @@ func ConnectMongo() *mongo.Client {
 
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://Mohammad5070:Sajjad5070@hw1cloud.yttxe75.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI("mongodb+srv://Mohammad5070:Mohammad5070@hw1cloud.yttxe75.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	// Send a ping to confirm a successful connection
 	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
-		panic(err)
+		logrus.Errorf("errror is : %v\n", err)
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 
-	collection = client.Database("validator").Collection("users")
+	collection = client.Database("Authenticator").Collection("users")
 	return client
 }
 
@@ -39,11 +41,11 @@ func SendPing(client *mongo.Client) {
 	logrus.Println("database is fine!")
 }
 
-func Insert(email string, lastname string, nationalId string, ip string, firstImage string, secondImage string) bool {
-	err := collection.FindOne(context.TODO(), bson.D{{"nationalId", nationalId}}).Err()
-	if err != mongo.ErrNoDocuments {
+func Insert(email string, lastname string, nationalId string, ip string, firstImage string, secondImage string) error {
+	err := collection.FindOne(context.TODO(), bson.D{{"_id", nationalId}}).Err()
+	if !errors.Is(err, mongo.ErrNoDocuments) {
 		logrus.Println("user is already registered: ", nationalId)
-		return false
+		return err
 	}
 	//nationalId = base64.StdEncoding.EncodeToString([]byte(nationalId))
 	user := NewUSer(email, lastname, nationalId, ip, firstImage, secondImage, "pending")
@@ -54,7 +56,7 @@ func Insert(email string, lastname string, nationalId string, ip string, firstIm
 
 	logrus.Println("user is created: ", nationalId, " name:", user.Lastname)
 
-	return true
+	return nil
 }
 
 //func Update(nationalId, state string) bool {
@@ -93,7 +95,7 @@ func GetAll() []User {
 
 func FindUser(nationalId string) *User {
 	var user User
-	err := collection.FindOne(context.TODO(), bson.D{{"nationalID", nationalId}}).Decode(&user)
+	err := collection.FindOne(context.TODO(), bson.D{{"_id", nationalId}}).Decode(&user)
 	if err != nil {
 		logrus.Warnln("user not found", err)
 	}

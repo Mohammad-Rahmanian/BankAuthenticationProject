@@ -3,7 +3,7 @@ package api
 type User struct {
 	Email       string `json:"email" bson:"email"`
 	Lastname    string `json:"lastname" bson:"lastname"`
-	NationalID  string `json:"nationalID" bson:"nationalID"`
+	NationalID  string `json:"nationalID" bson:"_id"`
 	IP          string `json:"ip" bson:"ip"`
 	FirstImage  string `json:"firstImage" bson:"firstImage"`
 	SecondImage string `json:"secondImage" bson:"secondImage"`

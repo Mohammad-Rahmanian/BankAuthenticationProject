@@ -6,12 +6,6 @@ import (
 	"context"
 )
 
-//var (
-//	databaseCollection        *mongo.Collection
-//	S3Sess           *session.Session
-//	RabbitConnection *amqp.Connection
-//)
-
 func main() {
 	e := router.New()
 	client := api.ConnectMongo()
@@ -22,6 +16,6 @@ func main() {
 	}()
 	api.ConnectS3()
 	api.ConnectMQ()
-
+	defer api.CloseMQ()
 	e.Start(":8000")
 }

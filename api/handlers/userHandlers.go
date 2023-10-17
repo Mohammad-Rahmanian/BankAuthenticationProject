@@ -30,8 +30,16 @@ func RegisterRequest(c echo.Context) error {
 	firstPath := api.UploadS3(api.StorageSession, firstImage, "SajjadStorage", lastname)
 	secondPath := api.UploadS3(api.StorageSession, secondImage, "SajjadStorage", lastname)
 	user := api.NewUSer(email, lastname, nationalId, ip, firstPath, secondPath, "pending")
-	api.Insert(email, lastname, nationalId, ip, firstPath, secondPath)
+	err = api.Insert(email, lastname, nationalId, ip, firstPath, secondPath)
+	if err != nil {
+		logrus.Printf("Can not insert to database")
+		return c.JSON(http.StatusInternalServerError, "Can not insert to database")
+	}
 	err = api.WriteMQ(nationalId)
+	if err != nil {
+		logrus.Printf("Can not write to queue")
+		return c.JSON(http.StatusInternalServerError, "Can not write to queue")
+	}
 	fmt.Printf("%#v", user)
 	return c.String(http.StatusOK, "Your authentication request has been registered.")
 }
@@ -41,8 +49,6 @@ func CheckRequest(c echo.Context) error {
 	nationalID = base64.StdEncoding.EncodeToString([]byte(nationalID))
 	api.GetAll()
 	var user = api.FindUser(nationalID)
-	println("*********************************")
-	println(user.State)
 
 	if user.IP != c.RealIP() {
 		return c.String(403, "Your access is unauthorized")

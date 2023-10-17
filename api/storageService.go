@@ -52,25 +52,19 @@ func ConnectMQ() {
 	url := "amqps://kkyazhsy:tXIS6A9botHvCsdygKjRfM3FwFR4qElg@hummingbird.rmq.cloudamqp.com/kkyazhsy"
 	var err error
 	RabbitConnection, err = amqp.Dial(url)
-	if RabbitConnection == nil {
-		println("******************")
-	}
 	if err != nil {
 		logrus.Println(err)
 	}
 }
 
-func CloseMQ(connection *amqp.Connection) {
-	err := connection.Close()
+func CloseMQ() {
+	err := RabbitConnection.Close()
 	if err != nil {
-		return
+		logrus.Println(err)
 	}
 }
 
 func WriteMQ(message string) error {
-	//if RabbitConnection == nil {
-	//	println("******************")
-	//}
 	channel, _ := RabbitConnection.Channel()
 	msg := amqp.Publishing{
 		DeliveryMode: 1,
