@@ -1,19 +1,19 @@
-package api
+package utils
 
 import (
-	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
+	"io"
 	"mime/multipart"
+	"os"
 )
 
 var StorageSession *session.Session
-var RabbitConnection *amqp.Connection
 
 func ConnectS3() error {
 	var err error
@@ -49,38 +49,25 @@ func UploadS3(sess *session.Session, fileHeader *multipart.FileHeader, bucket st
 
 	return key, err
 }
-func ConnectMQ() error {
-	url := "amqps://kkyazhsy:tXIS6A9botHvCsdygKjRfM3FwFR4qElg@hummingbird.rmq.cloudamqp.com/kkyazhsy"
-	var err error
-	RabbitConnection, err = amqp.Dial(url)
+func DownloadS3(sess *session.Session, bucket string, key string) (*os.File, error) {
+	dir, _ := os.Getwd()
+	file, err := os.Create(dir + "/images/" + key)
 	if err != nil {
-		logrus.Warnln("Can not connect to MQ ", err)
-		return err
+		logrus.Println("Can not open file:", err)
+		return nil, err
 	}
-	logrus.Println("connected to MQ")
-	return err
-}
+	s3Client := s3.New(sess)
 
-func CloseMQ() {
-	err := RabbitConnection.Close()
+	obj, err := s3Client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+
+	_, err = io.Copy(file, obj.Body)
 	if err != nil {
-		logrus.Warnln("Can not close MQ ", err)
-		logrus.Println(err)
-	}
-}
-
-func WriteMQ(message string) error {
-	channel, _ := RabbitConnection.Channel()
-	msg := amqp.Publishing{
-		DeliveryMode: 1,
-		ContentType:  "text/plain",
-		Body:         []byte(message),
+		logrus.Println("Can not copy file:", err)
+		return nil, err
 	}
 
-	err := channel.PublishWithContext(context.TODO(), "amq.topic", "ping", false, false, msg)
-	if err != nil {
-		logrus.Warnln("Can not write to Mq ", err)
-		return err
-	}
-	return nil
+	return file, nil
 }

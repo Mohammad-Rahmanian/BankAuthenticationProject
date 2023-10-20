@@ -1,4 +1,4 @@
-package api
+package utils
 
 import (
 	"context"
@@ -39,56 +39,52 @@ func SendPing(client *mongo.Client) {
 	logrus.Println("database is fine!")
 }
 
-func Insert(email string, lastname string, encryptedNationalID string, ip string, firstImage string, secondImage string) error {
-	user := NewUSer(email, lastname, encryptedNationalID, ip, firstImage, secondImage, "pending")
+func Insert(user User) error {
 	_, err := collection.InsertOne(context.TODO(), user)
 	if err != nil {
 		logrus.Println("User is already registered")
 		return err
 	}
-	logrus.Println("user is created: ", encryptedNationalID, " name:", user.Lastname)
+	logrus.Println("user is created: ", user.NationalID, " name:", user.Lastname)
 	return err
 }
 
-//func Update(nationalId, state string) bool {
-//	update := bson.D{
-//		{"$set", bson.D{
-//			{"state", state},
-//		}},
-//	}
-//	_, err := collection.UpdateOne(context.TODO(), bson.D{{"nationalId", nationalId}}, update)
-//	if err != nil {
-//		logrus.Warnln("cant update users object")
-//		return false
-//	}
-//
-//	return true
-//}
-
-func GetAll() []User {
-	cur, err := collection.Find(context.TODO(), bson.D{})
+func UpdateState(encryptedNationalId, state string) error {
+	update := bson.D{
+		{"$set", bson.D{
+			{"state", state},
+		}},
+	}
+	_, err := collection.UpdateOne(context.TODO(), bson.D{{"_id", encryptedNationalId}}, update)
 	if err != nil {
-		logrus.Warnln("cant find all users")
+		return err
 	}
-
-	res := make([]User, 0)
-	var doc User
-	for cur.Next(context.TODO()) {
-		err := cur.Decode(&doc)
-		if err != nil {
-			log.Panicln(err)
-		}
-		res = append(res, doc)
-	}
-
-	return res
+	log.Println("User state is updated")
+	return nil
 }
 
-func FindUser(nationalId string) (*User, error) {
-	var user User
-	err := collection.FindOne(context.TODO(), bson.D{{"_id", nationalId}}).Decode(&user)
+func UpdateUserInfo(user User) error {
+	update := bson.D{
+		{"$set", bson.D{
+			{"state", user.State},
+			{"email", user.Email},
+			{"lastname", user.Lastname},
+			{"ip", user.IP},
+			{"firstImage", user.FirstImage},
+			{"secondImage", user.SecondImage},
+		}},
+	}
+	_, err := collection.UpdateOne(context.TODO(), bson.D{{"_id", user.NationalID}}, update)
 	if err != nil {
-		logrus.Warnln("user not found", err)
+		return err
+	}
+	log.Println("User state is updated")
+	return nil
+}
+func FindUser(encryptedNationalId string) (*User, error) {
+	var user User
+	err := collection.FindOne(context.TODO(), bson.D{{"_id", encryptedNationalId}}).Decode(&user)
+	if err != nil {
 		return nil, err
 	}
 	return &user, err

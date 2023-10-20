@@ -1,4 +1,4 @@
-package api
+package utils
 
 type User struct {
 	Email       string `json:"email" bson:"email"`

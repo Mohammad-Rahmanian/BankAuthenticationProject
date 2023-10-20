@@ -1,31 +1,36 @@
 package main
 
 import (
-	"BankAuthenticationProject/api"
-	"BankAuthenticationProject/router"
+	"BankAuthenticationProject/secondService/api"
+	"BankAuthenticationProject/utils"
 	"context"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	e := router.New()
-	client := api.ConnectMongo()
+
+	client := utils.ConnectMongo()
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			panic(err)
 		}
 	}()
-	err := api.ConnectS3()
+	err := utils.ConnectS3()
 	if err != nil {
 		logrus.Println(err)
 	}
-	err = api.ConnectMQ()
+	err = utils.ConnectMQ()
 	if err != nil {
 		logrus.Println(err)
 	}
-	defer api.CloseMQ()
-	err = e.Start(":8000")
+	defer utils.CloseMQ()
+	err = utils.CreateChannel()
 	if err != nil {
 		logrus.Println(err)
 	}
+
+	for {
+		api.Authenticate()
+	}
+
 }

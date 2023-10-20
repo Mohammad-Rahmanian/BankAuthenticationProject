@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"BankAuthenticationProject/api"
+	"BankAuthenticationProject/utils"
 	"encoding/base64"
 	"fmt"
 	"github.com/labstack/echo"
@@ -25,35 +25,47 @@ func RegisterRequest(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Unable to open file")
 	}
 	encryptedNationalID := base64.StdEncoding.EncodeToString([]byte(nationalId))
-	firstPath, err := api.UploadS3(api.StorageSession, firstImage, "SajjadStorage", encryptedNationalID)
+	firstPath, err := utils.UploadS3(utils.StorageSession, firstImage, "SajjadStorage", encryptedNationalID)
 	if err != nil {
 		logrus.Printf("Unable to upload first image\n")
 		return c.String(http.StatusBadRequest, "Unable to upload first image")
 	}
-	secondPath, err := api.UploadS3(api.StorageSession, secondImage, "SajjadStorage", encryptedNationalID)
+	secondPath, err := utils.UploadS3(utils.StorageSession, secondImage, "SajjadStorage", encryptedNationalID)
 	if err != nil {
 		logrus.Printf("Unable to upload first image\n")
 		return c.String(http.StatusBadRequest, "Unable to upload first image")
 	}
-	user := api.NewUSer(email, lastname, encryptedNationalID, ip, firstPath, secondPath, "pending")
-	err = api.Insert(email, lastname, encryptedNationalID, ip, firstPath, secondPath)
-	if err != nil {
-		logrus.Printf("Can not insert to database\n")
-		return c.String(http.StatusInternalServerError, "Can not insert to database")
+	existUser, _ := utils.FindUser(encryptedNationalID)
+	if existUser == nil {
+		user := utils.NewUSer(email, lastname, encryptedNationalID, ip, firstPath, secondPath, "pending")
+		err = utils.Insert(*user)
+		if err != nil {
+			logrus.Printf("Can not insert to database\n")
+			return c.String(http.StatusInternalServerError, "Can not insert to database")
+		}
+		err = utils.WriteMQ(encryptedNationalID)
+		if err != nil {
+			logrus.Printf("Can not write to queue\n")
+			return c.String(http.StatusInternalServerError, "Can not write to queue")
+		}
+		fmt.Printf("%#v\n", *user)
+		return c.String(http.StatusOK, "Your authentication request has been registered.")
+	} else {
+		if existUser.State == "accepted" {
+			return c.String(http.StatusOK, "Your authentication request has already been accepted.")
+		} else if existUser.State == "Pending" {
+			return c.String(http.StatusOK, "Your authentication request has been registered. Please wait to see the result.")
+		} else {
+			return c.String(http.StatusOK, "Your authentication request has already been rejected")
+		}
 	}
-	err = api.WriteMQ(encryptedNationalID)
-	if err != nil {
-		logrus.Printf("Can not write to queue\n")
-		return c.String(http.StatusInternalServerError, "Can not write to queue")
-	}
-	fmt.Printf("%#v\n", *user)
-	return c.String(http.StatusOK, "Your authentication request has been registered.")
+
 }
 
 func CheckRequest(c echo.Context) error {
 	nationalID := c.QueryParam("nationalID")
 	encryptedNationalID := base64.StdEncoding.EncodeToString([]byte(nationalID))
-	user, err := api.FindUser(encryptedNationalID)
+	user, err := utils.FindUser(encryptedNationalID)
 	if err != nil {
 		return c.String(http.StatusForbidden, "Your national id is wrong")
 	} else if user.IP != c.RealIP() {
