@@ -45,7 +45,6 @@ func Insert(user User) error {
 		logrus.Println("User is already registered")
 		return err
 	}
-	logrus.Println("user is created: ", user.NationalID, " name:", user.Lastname)
 	return err
 }
 
@@ -63,24 +62,6 @@ func UpdateState(encryptedNationalId, state string) error {
 	return nil
 }
 
-func UpdateUserInfo(user User) error {
-	update := bson.D{
-		{"$set", bson.D{
-			{"state", user.State},
-			{"email", user.Email},
-			{"lastname", user.Lastname},
-			{"ip", user.IP},
-			{"firstImage", user.FirstImage},
-			{"secondImage", user.SecondImage},
-		}},
-	}
-	_, err := collection.UpdateOne(context.TODO(), bson.D{{"_id", user.NationalID}}, update)
-	if err != nil {
-		return err
-	}
-	log.Println("User state is updated")
-	return nil
-}
 func FindUser(encryptedNationalId string) (*User, error) {
 	var user User
 	err := collection.FindOne(context.TODO(), bson.D{{"_id", encryptedNationalId}}).Decode(&user)

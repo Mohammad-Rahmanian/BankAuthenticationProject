@@ -38,6 +38,7 @@ func RegisterRequest(c echo.Context) error {
 	existUser, _ := utils.FindUser(encryptedNationalID)
 	if existUser == nil {
 		user := utils.NewUSer(email, lastname, encryptedNationalID, ip, firstPath, secondPath, "pending")
+		logrus.Println("User is created: ", " name:", user.Lastname)
 		err = utils.Insert(*user)
 		if err != nil {
 			logrus.Printf("Can not insert to database\n")

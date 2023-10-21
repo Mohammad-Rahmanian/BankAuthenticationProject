@@ -39,7 +39,6 @@ func CreateChannel() error {
 }
 func ConnectMQ() error {
 	url := "amqps://zftmeqcg:qfY06WfgC7G94ne1CXvPnPSvOg5ZMJAK@hummingbird.rmq.cloudamqp.com/zftmeqcg"
-	//url := "amqps://xgyeesmr:T-UTG1qOjoipEH5wB5xFoLPInQ7MpjYJ@sparrow.rmq.cloudamqp.com/xgyeesmr"
 	var err error
 	RabbitConnection, err = amqp.Dial(url)
 	if err != nil {

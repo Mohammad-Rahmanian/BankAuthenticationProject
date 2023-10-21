@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	client := utils.ConnectMongo()
 	defer func() {
 		if err := client.Disconnect(context.TODO()); err != nil {

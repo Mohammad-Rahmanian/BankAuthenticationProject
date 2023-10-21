@@ -27,7 +27,6 @@ func Authenticate() {
 	if err != nil {
 		logrus.Println("Can not download second image:", err)
 	}
-	println(firstImage.Name(), SecondImage.Name())
 
 	firstID, err := FaceDetection(firstImage)
 	secondID, err := FaceDetection(SecondImage)
