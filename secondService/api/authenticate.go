@@ -44,6 +44,8 @@ func Authenticate() {
 		_, err = SendMail(user.Email, user.State)
 		if err != nil {
 			logrus.Println("Can not send mail:", err)
+		} else {
+			logrus.Println("Mail has been sent successfully ")
 		}
 		logrus.Printf("%s has been authenticated successfully.", user.Lastname)
 
@@ -55,6 +57,8 @@ func Authenticate() {
 		_, err = SendMail(user.Email, user.State)
 		if err != nil {
 			logrus.Println("Can not send Email:", err)
+		} else {
+			logrus.Println("Mail has been sent successfully ")
 		}
 		logrus.Printf("%s has not been authenticated successfully. Please try again", user.Lastname)
 
