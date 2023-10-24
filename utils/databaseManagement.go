@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 var collection *mongo.Collection
@@ -58,7 +57,7 @@ func UpdateState(encryptedNationalId, state string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("User state is updated")
+	logrus.Println("User state is updated")
 	return nil
 }
 

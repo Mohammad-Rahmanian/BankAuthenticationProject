@@ -2,7 +2,6 @@ package api
 
 import (
 	"BankAuthenticationProject/utils"
-	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,12 +33,13 @@ func Authenticate() {
 	if err != nil {
 		logrus.Println(err)
 	}
-	fmt.Printf("Face similarity score: %d", similarityScore)
+	logrus.Printf("Face similarity score: %d\n", similarityScore)
 	if similarityScore >= 80 {
 		err := utils.UpdateState(encryptedNationalId, "accepted")
 		if err != nil {
 			logrus.Println("Can not update user state", err)
 		}
+		user.State = "accepted"
 
 		_, err = SendMail(user.Email, user.State)
 		if err != nil {
@@ -54,6 +54,7 @@ func Authenticate() {
 		if err != nil {
 			logrus.Println("Can not update user state")
 		}
+		user.State = "rejected"
 		_, err = SendMail(user.Email, user.State)
 		if err != nil {
 			logrus.Println("Can not send Email:", err)
