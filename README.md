@@ -35,10 +35,10 @@ The second service is responsible for processing messages from the RabbitMQ queu
 
 ## Configuration
 
-To run this project, you need to place a configuration file in the `config` directory. This configuration file should contain the necessary API keys and URLs required to connect to the various cloud services used in the project.
+To run this project, you need to place a configuration file in the `configs` directory. This configuration file should contain the necessary API keys and URLs required to connect to the various cloud services used in the project.
 
 Please ensure that the configuration file is properly populated with the required credentials and service endpoints before running the project.
 
-For detailed instructions on how to set up and run the project, please refer to the project's documentation or user guide.
+For detailed instructions on how to set up and run the project.
 
 **Note:** Ensure that you have the necessary API keys and access to the specified cloud services before running the project.
