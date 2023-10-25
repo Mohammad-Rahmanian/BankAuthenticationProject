@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"BankAuthenticationProject/configs"
 	"context"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/sirupsen/logrus"
@@ -38,9 +39,8 @@ func CreateChannel() error {
 	return nil
 }
 func ConnectMQ() error {
-	url := "amqps://zftmeqcg:qfY06WfgC7G94ne1CXvPnPSvOg5ZMJAK@hummingbird.rmq.cloudamqp.com/zftmeqcg"
 	var err error
-	RabbitConnection, err = amqp.Dial(url)
+	RabbitConnection, err = amqp.Dial(configs.MessageBrokerURL)
 	if err != nil {
 		logrus.Warnln("Can not connect to MQ ", err)
 		return err

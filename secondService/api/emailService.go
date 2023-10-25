@@ -1,23 +1,18 @@
 package api
 
 import (
+	"BankAuthenticationProject/configs"
 	"context"
 	"fmt"
 	"github.com/mailgun/mailgun-go/v3"
 	"time"
 )
 
-var (
-	mailApiKey = "2d1c6793bd829e1db0c93e4aba3e5e2d-324e0bb2-46cbb1a3"
-	domain     = "sandbox9037afd2c4234092bfe7684151bfae23.mailgun.org"
-	sender     = "sajadrahmanian1616@gmail.com"
-)
-
 func SendMail(recipient string, state string) (string, error) {
-	mg := mailgun.NewMailgun(domain, mailApiKey)
+	mg := mailgun.NewMailgun(configs.MailDomain, configs.MailApiKey)
 	body := fmt.Sprintf("Your authentication request status is %s", state)
 	m := mg.NewMessage(
-		sender,
+		configs.MailSender,
 		"Authentication Result",
 		body,
 		recipient,

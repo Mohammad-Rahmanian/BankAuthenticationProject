@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"BankAuthenticationProject/configs"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -18,9 +19,9 @@ var StorageSession *session.Session
 func ConnectS3() error {
 	var err error
 	StorageSession, err = session.NewSession(&aws.Config{
-		Credentials: credentials.NewStaticCredentials("175b85c0-26e0-4ca2-b25a-e2d3ec0b56cb", "380b008e0005cbf7f14e68c6e365f65940116d3016b182297f73bca9d8f17e4f", ""),
+		Credentials: credentials.NewStaticCredentials(configs.StorageServiceID, configs.StorageServiceSecret, ""),
 		Region:      aws.String("default"),
-		Endpoint:    aws.String("https://sajjadstorage.s3.ir-thr-at1.arvanstorage.ir"),
+		Endpoint:    aws.String(configs.StorageServiceEndpoint),
 	})
 
 	if err != nil {

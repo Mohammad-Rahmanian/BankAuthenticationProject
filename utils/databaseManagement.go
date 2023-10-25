@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"BankAuthenticationProject/configs"
 	"context"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ var collection *mongo.Collection
 func ConnectMongo() *mongo.Client {
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://Mohammad5070:Sajjad5070@hw1cloud.yttxe75.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(configs.DatabaseURL).SetServerAPIOptions(serverAPI)
 	// Create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {

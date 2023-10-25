@@ -1,6 +1,7 @@
 package api
 
 import (
+	"BankAuthenticationProject/configs"
 	"bytes"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
@@ -12,8 +13,6 @@ import (
 )
 
 var (
-	apiKey            = "acc_c6dc3b742095bd3"
-	secretKey         = "eb001f6e29796a76c991e6036fdb7430"
 	faceDetectionURL  = "https://api.imagga.com/v2/faces/detections?return_face_id=1"
 	faceSimilarityURL = "https://api.imagga.com/v2/faces/similarity"
 )
@@ -51,7 +50,7 @@ func FaceDetection(file *os.File) (string, error) {
 		logrus.Println("Can not create request:", err)
 		return "", err
 	}
-	request.SetBasicAuth(apiKey, secretKey)
+	request.SetBasicAuth(configs.ImageProcessingApiKey, configs.ImageProcessingSecretKey)
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 
 	client := &http.Client{}
@@ -94,7 +93,7 @@ func FaceSimilarity(firstFace, secondFace string) (int, error) {
 		logrus.Println("Can not create request:", err)
 		return 0, err
 	}
-	request.SetBasicAuth(apiKey, secretKey)
+	request.SetBasicAuth(configs.ImageProcessingApiKey, configs.ImageProcessingSecretKey)
 
 	response, err := client.Do(request)
 	if err != nil {
