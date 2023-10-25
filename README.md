@@ -3,7 +3,6 @@
 This project is implemented in the Golang programming language and is designed to create a bank authentication service. The primary objective of this project is to work with various cloud services, including MongoDB Atlas for database storage, an S3-compatible object storage service provided by Abararvan for storing photos, CloudAMQP for RabbitMQ, IMGGA for image processing, and Mailgun for email sending.
 
 ## Project Description
-file:///home/sajjad/Pictures/Screenshots/Screenshot%20from%202023-10-25%2017-41-59.png
 
 The software consists of two backend services:
 
