@@ -35,10 +35,32 @@ The second service is responsible for processing messages from the RabbitMQ queu
 
 ## Configuration
 
-To run this project, you need to place a configuration file in the `configs` directory. This configuration file should contain the necessary API keys and URLs required to connect to the various cloud services used in the project.
+**Setup:**
 
-Please ensure that the configuration file is properly populated with the required credentials and service endpoints before running the project.
+1. **Create Config File:**
+   - Navigate to the project directory.
+   - Create a `configs` directory.
+   - Inside `configs`, create a file named `config.go` with the following template (replace placeholder values with your actual API keys and endpoints):
 
-For detailed instructions on how to set up and run the project.
+```go
+package configs
 
+var (
+    MailApiKey               = "<MAIL_API_KEY>"
+    MailDomain               = "<MAILGUN_DOMAIN>"
+    MailSender               = "<EMAIL_SENDER>"
+    ImageProcessingApiKey    = "<IMG_PROCESSING_API_KEY>"
+    ImageProcessingSecretKey = "<IMG_PROCESSING_SECRET_KEY>"
+    MessageBrokerURL         = "<RABBITMQ_URL>"
+    DatabaseURL              = "<MONGODB_URL>"
+    StorageServiceID         = "<STORAGE_SERVICE_ID>"
+    StorageServiceSecret     = "<STORAGE_SERVICE_SECRET>"
+    StorageServiceEndpoint   = "<STORAGE_ENDPOINT>"
+)
+```
+## Run the Services:
+Start the services in the specified order:
+  -Run go run ./firstService/main.go to start the First Service.
+  -After the First Service is running, execute go run ./secondService/main.go to start the Second Service.
+  
 **Note:** Ensure that you have the necessary API keys and access to the specified cloud services before running the project.
