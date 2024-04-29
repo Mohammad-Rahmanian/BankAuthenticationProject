@@ -60,7 +60,9 @@ var (
 ```
 ## Run the Services:
 Start the services in the specified order:
-  -Run go run ./firstService/main.go to start the First Service.
-  -After the First Service is running, execute go run ./secondService/main.go to start the Second Service.
+
+Run go run ./firstService/main.go to start the First Service.
+
+After the First Service is running, execute go run ./secondService/main.go to start the Second Service.
   
 **Note:** Ensure that you have the necessary API keys and access to the specified cloud services before running the project.
