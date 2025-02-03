@@ -1,3 +1,6 @@
 images/
 configs/
+go.sum
+go.mod
+.idea/
 
